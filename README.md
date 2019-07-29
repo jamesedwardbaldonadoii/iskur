@@ -1,7 +1,13 @@
+
+## Installation
+Install the latest node version 10 and npm support
+Install the latest mongodb 4.0.11 and higher
+
+
 ## Configuration
 
-Make sure to add your own `MONGOURI` from your [mLab](http://mlab.com) database in `config/keys.js`.
-
+Make sure to update mongodb configuration `config/keys.js` 
+eg. `mongodb://localhost:27017/{database-name}`
 ```javascript
 module.exports = {
   mongoURI: "YOUR_MONGO_URI_HERE",
