@@ -25,18 +25,24 @@ router.post("/register", (req, res) => {
     return res.status(400).json(errors);
   }
 
-  User.findOne({ email: req.body.email }).then(user => {
+  User.findOne({
+    email: req.body.email
+  }).then(user => {
     if (user) {
-      return res.status(400).json({ email: "Email already exists" });
+      return res.status(400).json({
+        email: "Email already exists"
+      });
     } else {
       const newUser = new User({
         name: req.body.name,
         email: req.body.email,
-        password: req.body.password
+        password: req.body.password,
+        provider: 'local'
       });
 
       // Hash password before saving in database
       bcrypt.genSalt(10, (err, salt) => {
+        newUser.salt = salt;
         bcrypt.hash(newUser.password, salt, (err, hash) => {
           if (err) throw err;
           newUser.password = hash;
@@ -104,6 +110,40 @@ router.post("/login", (req, res) => {
       }
     });
   });
+});
+
+
+// @route api/auth/facebook
+// @desc login user with facebook and get token
+// @access Public
+// app.get('/auth/facebook', passport.authenticate('facebook', {scope:'email'}));
+router.post("/auth/facebook", (req, res) => {
+  console.log(keys);
+  // passport facebook strategy
+  var facebookAuth = keys.facebook;
+  passport.use(new FacebookStrategy({
+    "clientID": facebookAuth.API_KEY,
+    "clientSecret": facebookAuth.API_SECRET,
+    "callbackURL": facebookAuth.CALLBACK_URL
+  },
+
+  function (token, refreshToken, profile, done) {
+    var user = findUser(profile.id);
+    if (user) {
+        console.log(users);
+        return done(null, user);
+    } else {
+        var newUser = {
+            "id":       profile.id,
+            "name":     profile.name.givenName + ' ' + profile.name.familyName,
+            "email":    (profile.emails[0].value || '').toLowerCase(),
+            "token":    token
+        };
+        users.push(newUser);
+        console.log(users);
+        return done(null, newUser);
+    }
+  }));
 });
 
 module.exports = router;

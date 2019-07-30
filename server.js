@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const passport = require("passport");
+const config = require("./config/keys");
 
 const users = require("./routes/api/users");
 
@@ -16,7 +17,7 @@ app.use(
 app.use(bodyParser.json());
 
 // DB Config
-const db = require("./config/keys").mongoURI;
+const db = config.mongoURI;
 
 // Connect to MongoDB
 mongoose
@@ -35,6 +36,13 @@ require("./config/passport")(passport);
 
 // Routes
 app.use("/api/users", users);
+
+app.get('/api/auth/facebook', passport.authenticate('facebook', {scope:'email'}));
+
+app.get('/auth/facebook/callback', passport.authenticate('facebook', { failureRedirect: '/error' }), function(err, user, info){
+    // console.log(err, user, info);
+  }
+);
 
 const port = process.env.PORT || 5000;
 
